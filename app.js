@@ -58,12 +58,15 @@ app.all('/rest/status',                                  cors(corsOptions), Endp
 
 // CORS para todas as rotas seguintes
 app.all('/rest/*',                                       cors(corsOptions));
-app.get('/rest/tarefas',                                 jsonparser, urlencodedparser, Endpoints.listaTarefas);
+app.get('/rest/tarefas',                                 Endpoints.listaTarefas);
 app.post('/rest/tarefas',                                jsonparser, urlencodedparser, Endpoints.criaTarefa);
 
 app.get('/rest/formulario',                              cookieparser(), csrfprotection, Endpoints.buscaFormulario);
 app.post('/rest/formulario',                             cookieparser(), urlencodedparser, csrfprotection, Endpoints.criaTarefa);
 
+app.post('/seguro/login',                                cors(corsOptions), jsonparser, Endpoints.login);
+app.get('/seguro/tarefas',                               cors(corsOptions), Endpoints.listaSeguraTarefas);
+app.post('/seguro/tarefas',                              cors(corsOptions), jsonparser, Endpoints.criaSeguraTarefa);
 
 // ========== SERVER ===========
 
