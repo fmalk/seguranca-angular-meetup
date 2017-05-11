@@ -1,0 +1,16 @@
+<!-- Main component for a primary marketing message or call to action -->
+<div class="jumbotron">
+    <h1>Lista de Tarefas</h1>
+    <ul>
+        <li ng-repeat="l in lista">
+            <h2>{{ l.nome }}</h2>
+            <p>
+                ID: {{ l.id }}<br />
+                Autor: {{ l.autor }}
+            </p>
+        </li>
+    </ul>
+    <p ng-if="erro">
+        {{ erro }}
+    </p>
+</div>

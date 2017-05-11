@@ -1,10 +1,20 @@
 var express            = require('express'),
+    jade               = require('jade'),
+    cookieparser       = require('cookie-parser'),
+    csrf               = require('csurf'),
 	bodyparser         = require('body-parser'),
 	http               = require('http'),
 	path               = require('path'),
-	passport           = require('passport');
+    cors               = require('cors'),
+	passport           = require('passport'),
+    Endpoints          = require('./endpoints.js');
 
 var app = express();
+
+// jade
+app.set('view engine', 'jade');
+app.set('views', path.join(__dirname, 'public/views'));
+app.locals.basedir = app.get('views');
 
 // create application/json parser
 var jsonparser = bodyparser.json();
@@ -15,58 +25,45 @@ var urlencodedparser = bodyparser.urlencoded({
 	parameterLimit: 20
 });
 
+// CSRF
+var csrfprotection = csrf({ cookie: true });
+
+// CORS
+var whitelist = ['seguranca-angular.herokuapp.com', 'localhost:777'];
+var corsOptions = {
+    origin: function (origin, callback) {
+        if (whitelist.indexOf(origin) !== -1) {
+            callback(null, true)
+        } else {
+            callback('Erro CORS')
+        }
+    },
+    preflightContinue: false,
+    optionsSuccessStatus: 200
+};
+
 // ======== MIDDLEWARES ===========
 
-app.use(express.compress());
-app.use(express.static(path.join(__dirname, 'public')));//, { maxAge: oneDay })));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(passport.initialize());
-app.use(app.router);
-
-// Permite CORS
-app.all('*', function(req,res,next) {
-
-	// possível bug: Access-Control-Allow-Headers precisa aceitar o que vier, e não há wildcard.
-	// Access-control-request-headers é o padrão para indicar o que está sendo transmitido, mas não há garantia que ele realmente aparece
-	var allowed = req.get('access-control-request-headers');
-	if (!allowed) {
-		/*
-		// vamos procurar os headers no request e retornar todos
-		var headers = Object.keys(req.headers);
-		if (headers.length > 0) {
-			allowed = Object.keys(req.headers).reduce(function(prev, cur) {
-				return prev+', '+cur;
-			}, 'authorization, content-type'); // estes dois podem não estar listados e são importantes
-		} else {
-
-		 por enquanto o padrão deve resolver */
-			allowed = 'Origin, X-Requested-With, Content-Type, Content-Length, Accept, Authorization, ' +
-				'User-Agent, Host, Accept-Encoding, Accept-Language, Connection, Referer, Cache-Control';
-		//}
-	}
-
-	res.header('Access-Control-Allow-Origin', config.DOMAINS);
-	res.header('Access-Control-Allow-Methods', 'POST,GET,OPTIONS,HEAD');
-	res.header("Access-Control-Allow-Headers", allowed);
-	res.header("Access-Control-Allow-Credentials", "true");
-	next();
-});
-app.options('*', function(req,res) {
-	res.send(200);
-});
 
 // ======== ROTAS ===========
 
-app.get('/api',                                          Status.status);
-app.head('/api',                                         Status.status);
+// CORS apenas nesta rota
+app.all('/rest/status',                                  cors(corsOptions), Endpoints.status);
 
-app.post('/login',                                       jsonparser, urlencodedparser, Autenticacao.autenticarWeb);
-app.post('/erro',                                        jsonparser, urlencodedparser, registrarErro);
+// CORS para todas as rotas seguintes
+app.all('/rest/*',                                       cors(corsOptions));
+app.get('/rest/tarefas',                                 jsonparser, urlencodedparser, Endpoints.listaTarefas);
+app.post('/rest/tarefas',                                jsonparser, urlencodedparser, Endpoints.criaTarefa);
+
+app.get('/rest/formulario',                              cookieparser(), csrfprotection, Endpoints.buscaFormulario);
+app.post('/rest/formulario',                             cookieparser(), urlencodedparser, csrfprotection, Endpoints.criaTarefa);
 
 
 // ========== SERVER ===========
 
 var server = http.createServer(app);
 //io.listen(server);
-server.listen(process.env.PORT || 80);
-
+server.listen(process.env.PORT || 777);
 exports = server;
