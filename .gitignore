@@ -1,0 +1,14 @@
+.project
+.c9*
+.idea/*
+docs/*
+coverage/*
+node_modules/*
+bower_components/*
+*.sublime*
+.settings
+.settings/*
+npm-debug.log
+~$*.xlsx
+generated/
+uploads/
