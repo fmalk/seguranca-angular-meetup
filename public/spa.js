@@ -8,6 +8,10 @@ spa.config(['$routeProvider', function($routeProvider) {
             templateUrl: 'views/home.html',
             controller: 'Home'
         })
+        .when('/', {
+            templateUrl: 'views/home.html',
+            controller: 'Home'
+        })
         .when('/formulario', {
             templateUrl: '/rest/formulario'
         });
@@ -26,7 +30,7 @@ spa.controller('Home', ['$scope','Rest', function($scope, Rest) {
 spa.service('Rest', ['$http', function($http) {
     return {
         listaTarefas: function() {
-            return $http.get('/rest/tarefas');
+            return $http.get('https://seguranca-angular.herokuapp.com/rest/tarefas');
         }
     }
 }]);

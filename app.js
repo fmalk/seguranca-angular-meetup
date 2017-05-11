@@ -29,11 +29,14 @@ var urlencodedparser = bodyparser.urlencoded({
 var csrfprotection = csrf({ cookie: true });
 
 // CORS
-var whitelist = ['seguranca-angular.herokuapp.com', 'localhost:777'];
+var whitelist = ['https://seguranca-angular.herokuapp.com', 'http://localhost:777'];
 var corsOptions = {
     origin: function (origin, callback) {
         console.log(origin);
-        if (whitelist.indexOf(origin) !== -1) {
+        // Se for vazio, o request está no mesmo domínio
+        if (!origin) {
+            callback(null, true);
+        } else if(whitelist.indexOf(origin) !== -1) {
             callback(null, true)
         } else {
             callback('Erro CORS')
